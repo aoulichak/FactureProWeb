@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Factures</h2>
+    <a href="{{ url_for('factures.add_facture') }}" class="btn btn-primary">Nouvelle facture</a>
+  </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <div class="card shadow animate__animated animate__fadeIn">
+    <div class="search-container">
+      <!-- Barre de recherche -->
+      <div class="row mb-3">
+        <div class="col-md-6 mb-2 mb-md-0">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control rounded-pill ps-5" id="searchClient" placeholder="Rechercher un client..." autocomplete="off" style="box-shadow:0 1px 4px rgba(33,34,56,0.07);">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <input type="date" class="form-control" id="searchDate" placeholder="Filtrer par date">
+        </div>
+        <div class="col-md-3 text-end">
+          <button class="btn btn-outline-secondary" id="resetFilters" type="button"><i class="bi bi-x-circle"></i> Réinitialiser</button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle" id="facturesTable">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Client</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for facture in factures %}
+            <tr>
+              <td>{{ facture.id }}</td>
+              <td>{{ facture.date.strftime('%d/%m/%Y') }}</td>
+              <td>{{ clients[facture.client_id].nom_complet if facture.client_id in clients else 'Client supprimé' }}</td>
+              <td>
+                <a href="{{ url_for('factures.voir_facture', facture_id=facture.id) }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                <a href="{{ url_for('factures.edit_facture', facture_id=facture.id) }}" class="btn btn-sm btn-outline-warning ms-1"><i class="bi bi-pencil-square"></i> Modifier</a>
+                <form action="{{ url_for('factures.delete_facture', facture_id=facture.id) }}" method="post" style="display:inline;" onsubmit="return confirm('Supprimer cette facture ?');">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                </form>
+                <a href="{{ url_for('factures.recu_facture', facture_id=facture.id) }}" class="btn btn-sm btn-outline-success ms-1">Reçu PDF</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const clients = {{ clients_list | map(attribute='nom_complet') | list | tojson }};
+const searchClient = document.getElementById('searchClient');
+const searchDate = document.getElementById('searchDate');
+const resetFilters = document.getElementById('resetFilters');
+const table = document.getElementById('facturesTable').getElementsByTagName('tbody')[0];
+
+searchClient.addEventListener('input', function() {
+  filterTable();
+});
+
+searchDate.addEventListener('input', filterTable);
+resetFilters.addEventListener('click', function() {
+  searchClient.value = '';
+  searchDate.value = '';
+  filterTable();
+});
+
+function filterTable() {
+  const clientVal = searchClient.value.trim().toLowerCase();
+  const dateVal = searchDate.value;
+  Array.from(table.rows).forEach(row => {
+    const clientCell = row.cells[2].textContent.trim().toLowerCase();
+    const dateCell = row.cells[1].textContent.trim();
+    let show = true;
+    if (clientVal && !clientCell.includes(clientVal)) show = false;
+    if (dateVal && !dateCell.split('/').reverse().join('-').startsWith(dateVal)) show = false;
+    row.style.display = show ? '' : 'none';
+  });
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow animate__animated animate__fadeIn">
+        <div class="card-body">
+          <h3 class="mb-4">Paramètres de l'entreprise</h3>
+          <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="nom_societe" class="form-label">Nom de la société</label>
+              <input type="text" class="form-control" id="nom_societe" name="nom_societe" value="{{ params['nom_societe'].valeur if params.get('nom_societe') else '' }}">
+            </div>
+            <div class="mb-3">
+              <label for="adresse" class="form-label">Adresse</label>
+              <input type="text" class="form-control" id="adresse" name="adresse" value="{{ params['adresse'].valeur if params.get('adresse') else '' }}">
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" name="email" value="{{ params['email'].valeur if params.get('email') else '' }}">
+            </div>
+            <div class="mb-3">
+              <label for="telephone" class="form-label">Téléphone</label>
+              <input type="text" class="form-control" id="telephone" name="telephone" value="{{ params['telephone'].valeur if params.get('telephone') else '' }}">
+            </div>
+            <div class="mb-3">
+              <label for="logo" class="form-label">Logo</label><br>
+              {% if params.get('logo') and params['logo'].valeur %}
+                <img src="{{ url_for('static', filename='img/' + params['logo'].valeur) }}" alt="Logo" style="max-height:60px; max-width:120px;" class="mb-2"><br>
+              {% endif %}
+              <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
+            </div>
+            <div class="mb-3">
+              <label for="conditions_paiement" class="form-label">Conditions de paiement</label>
+              <textarea class="form-control" id="conditions_paiement" name="conditions_paiement" rows="4">{{ params['conditions_paiement'].valeur if params.get('conditions_paiement') else '' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+          </form>
+          <hr class="my-4">
+          <h4 class="mb-3">Compte administrateur</h4>
+          <form method="POST" action="{{ url_for('parametres.parametres') }}" autocomplete="off">
+            <div class="mb-3">
+              <label for="new_username" class="form-label">Nom d'utilisateur</label>
+              <input type="text" class="form-control" id="new_username" name="new_username" value="{{ current_user.username }}" required>
+            </div>
+            <div class="mb-3">
+              <label for="new_password" class="form-label">Nouveau mot de passe</label>
+              <input type="password" class="form-control" id="new_password" name="new_password" placeholder="Laisser vide pour ne pas changer">
+            </div>
+            <button type="submit" class="btn btn-outline-primary">Mettre à jour le compte</button>
+          </form>
+          <hr class="my-4">
+          <div class="alert alert-danger border-danger shadow-sm mt-4">
+            <h5 class="mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i>Suppression de toutes les données</h5>
+            <form method="POST" action="{{ url_for('parametres.delete_all_data') }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer TOUTES les données ? Cette action est irréversible.');">
+              <div class="mb-2">
+                <label for="delete_password" class="form-label">Mot de passe administrateur <span class="text-danger">*</span></label>
+                <input type="password" class="form-control border-danger" id="delete_password" name="delete_password" placeholder="Saisir le mot de passe admin" required autocomplete="off">
+              </div>
+              <div class="mb-2 small text-danger">
+                Cette action supprimera <b>toutes</b> les données (clients, produits, factures, paramètres, utilisateurs) et réinitialisera l'application.<br>
+                Un nouveau compte admin (admin/admin123) sera créé. Vous serez redirigé vers la page de connexion.
+              </div>
+              <button type="submit" class="btn btn-danger mt-2"><i class="bi bi-trash me-1"></i>Supprimer toutes les données</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

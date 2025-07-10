@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .facture-table th, .facture-table td {
+    vertical-align: middle;
+    word-break: break-word;
+    white-space: pre-line;
+    max-width: 220px;
+  }
+  .facture-table th {
+    background: #e3eafc;
+    font-weight: 600;
+  }
+  .facture-table td {
+    background: #fff;
+  }
+  @media (max-width: 991px) {
+    .facture-table th, .facture-table td { max-width: 120px; font-size: 0.95em; }
+  }
+</style>
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow animate__animated animate__fadeIn">
+        <div class="card-body">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-3">
+            <div>
+              <h3 class="mb-1" style="color:#1a2238;">Facture n°{{ facture.id }}</h3>
+              <div class="text-muted small">Date : {{ facture.date.strftime('%d/%m/%Y') }}</div>
+              <div class="fw-bold mt-1">Client : <span class="fw-normal">{{ client.nom_complet }}</span></div>
+            </div>
+            <div class="text-end">
+              <a href="{{ url_for('factures.recu_facture', facture_id=facture.id) }}" class="btn btn-success mb-2 mb-md-0"><i class="bi bi-download"></i> Télécharger le reçu PDF</a>
+              <a href="{{ url_for('factures.factures') }}" class="btn btn-secondary ms-2">Retour à la liste</a>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table facture-table table-bordered align-middle shadow-sm">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Quantité</th>
+                  <th>Prix unitaire</th>
+                  <th>Type</th>
+                  <th>TVA (%)</th>
+                  <th>Total ligne</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% set total_ht = 0 %}
+                {% set total_tva = 0 %}
+                {% for ligne in lignes %}
+                  {% if ligne.type_prix == 'HT' %}
+                    {% set ligne_ht = ligne.prix * ligne.quantite %}
+                    {% set ligne_tva = ligne_ht * ligne.tva / 100 %}
+                  {% else %}
+                    {% set ligne_ht = (ligne.prix * ligne.quantite) / (1 + ligne.tva / 100) %}
+                    {% set ligne_tva = (ligne.prix * ligne.quantite) - ligne_ht %}
+                  {% endif %}
+                  {% set total_ht = total_ht + ligne_ht %}
+                  {% set total_tva = total_tva + ligne_tva %}
+                  <tr>
+                    <td>{{ ligne.nom_produit }}</td>
+                    <td>{{ ligne.quantite }}</td>
+                    <td>{{ '{:,.2f}'.format(ligne.prix) }} DH</td>
+                    <td>{{ ligne.type_prix }}</td>
+                    <td>{{ ligne.tva }}</td>
+                    <td>{{ '{:,.2f}'.format(ligne_ht + ligne_tva) }} DH</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="5" class="text-end">Total HT</th>
+                  <th>{{ '{:,.2f}'.format(total_ht) }} DH</th>
+                </tr>
+                <tr>
+                  <th colspan="5" class="text-end">Total TVA</th>
+                  <th>{{ '{:,.2f}'.format(total_tva) }} DH</th>
+                </tr>
+                <tr class="table-primary">
+                  <th colspan="5" class="text-end">Total TTC</th>
+                  <th>{{ '{:,.2f}'.format(total_ht + total_tva) }} DH</th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

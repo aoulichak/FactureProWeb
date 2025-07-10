@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center mb-4">
+    <div class="col-md-8">
+      <div class="card shadow animate__animated animate__fadeIn">
+        <div class="card-body text-center">
+          <h1 class="display-5 mb-3" style="color:#1a2238;">Bienvenue sur FacturePro</h1>
+          <p class="lead">Votre tableau de bord professionnel pour la gestion des clients et des factures.</p>
+          <hr>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row justify-content-center g-4">
+    <div class="col-md-3">
+      <a href="{{ url_for('clients.clients') }}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm text-center card-link animate__animated animate__fadeInUp">
+          <div class="card-body">
+            <span class="fs-1 mb-2 d-block"><i class="bi bi-people"></i></span>
+            <h5 class="card-title">Clients</h5>
+            <p class="card-text text-muted">Gérer vos clients</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('produits.produits') }}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm text-center card-link animate__animated animate__fadeInUp">
+          <div class="card-body">
+            <span class="fs-1 mb-2 d-block"><i class="bi bi-box-seam"></i></span>
+            <h5 class="card-title">Produits</h5>
+            <p class="card-text text-muted">Gérer vos produits</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('factures.factures') }}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm text-center card-link animate__animated animate__fadeInUp">
+          <div class="card-body">
+            <span class="fs-1 mb-2 d-block"><i class="bi bi-receipt"></i></span>
+            <h5 class="card-title">Factures</h5>
+            <p class="card-text text-muted">Gérer vos factures</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('parametres.parametres') }}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm text-center card-link animate__animated animate__fadeInUp">
+          <div class="card-body">
+            <span class="fs-1 mb-2 d-block"><i class="bi bi-gear"></i></span>
+            <h5 class="card-title">Paramètres</h5>
+            <p class="card-text text-muted">Personnaliser l'application</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+  <!-- Section Statistiques -->
+  <div class="row mt-5 animate__animated animate__fadeInUp">
+    <!-- Indicateurs principaux -->
+    <div class="col-12 mb-4">
+      <div class="row g-4 justify-content-center">
+        <div class="col-md-2">
+          <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+              <div class="fs-2 mb-2"><i class="bi bi-people"></i></div>
+              <div class="fw-bold fs-4">{{ total_clients }}</div>
+              <div class="text-muted">Clients</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+              <div class="fs-2 mb-2"><i class="bi bi-receipt"></i></div>
+              <div class="fw-bold fs-4">{{ total_factures }}</div>
+              <div class="text-muted">Factures</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+              <div class="fs-2 mb-2"><i class="bi bi-cash-coin"></i></div>
+              <div class="fw-bold fs-4">{{ '{:,.2f}'.format(total_ttc) }} DH</div>
+              <div class="text-muted">Total facturé (TTC)</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+              <div class="fs-2 mb-2"><i class="bi bi-cash-stack"></i></div>
+              <div class="fw-bold fs-4">{{ '{:,.2f}'.format(total_ht) }} DH</div>
+              <div class="text-muted">Total HT</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+              <div class="fs-2 mb-2"><i class="bi bi-percent"></i></div>
+              <div class="fw-bold fs-4">{{ '{:,.2f}'.format(total_tva) }} DH</div>
+              <div class="text-muted">TVA collectée</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Graphiques dynamiques -->
+    <div class="col-lg-8 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Évolution du chiffre d'affaires TTC (12 derniers mois)</h5>
+          <canvas id="caChart" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Part du CA par client (Top 5)</h5>
+          <canvas id="pieClients" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Nombre de factures par mois</h5>
+          <canvas id="facturesBar" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+    <!-- Tableau des 5 dernières factures -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-3">5 dernières factures</h5>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Client</th>
+                  <th>Date</th>
+                  <th>Montant TTC</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for f in last_factures %}
+                <tr>
+                  <td>{{ f.client }}</td>
+                  <td>{{ f.date }}</td>
+                  <td>{{ '{:,.2f}'.format(f.ttc) }} DH</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Encadré performance mensuelle -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm h-100 animate__animated animate__pulse animate__delay-1s">
+        <div class="card-body text-center">
+          <h5 class="card-title mb-3">Performance du mois</h5>
+          <div class="display-6 fw-bold mb-2">{{ '{:,.2f}'.format(ca_mois_courant) }} DH</div>
+          <div class="mb-2 text-muted">Chiffre d'affaires TTC du mois</div>
+          <div class="mb-2">Moyenne 3 derniers mois : <span class="fw-bold">{{ '{:,.2f}'.format(moyenne_3mois) }} DH</span></div>
+          <div class="mb-2">Score de performance :
+            <span class="fw-bold {% if performance_score > 0 %}text-success{% elif performance_score < 0 %}text-danger{% else %}text-secondary{% endif %}">
+              {{ performance_score }} %
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Section Export Excel -->
+  <div class="row mb-5 animate__animated animate__fadeInUp animate__delay-1s">
+    <div class="col-lg-10 mx-auto">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Télécharger un rapport Excel</h5>
+          <form class="row g-3 align-items-end" method="get" action="{{ url_for('dashboard.export_excel') }}">
+            <div class="col-md-2">
+              <label for="annee" class="form-label">Année</label>
+              <input type="number" class="form-control" id="annee" name="annee" min="2000" max="2100" placeholder="2024">
+            </div>
+            <div class="col-md-2">
+              <label for="mois" class="form-label">Mois</label>
+              <select class="form-select" id="mois" name="mois">
+                <option value="">Tous</option>
+                {% for m in range(1,13) %}
+                  <option value="{{ m }}">{{ '{:02d}'.format(m) }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="jour" class="form-label">Jour</label>
+              <input type="number" class="form-control" id="jour" name="jour" min="1" max="31" placeholder="">
+            </div>
+            <div class="col-md-3">
+              <label for="client_id" class="form-label">Client</label>
+              <select class="form-select" id="client_id" name="client_id">
+                <option value="">Tous</option>
+                {% for client in clients %}
+                  <option value="{{ client.id }}">{{ client.nom_complet }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="produit_id" class="form-label">Produit</label>
+              <select class="form-select" id="produit_id" name="produit_id">
+                <option value="">Tous</option>
+                {% for produit in produits %}
+                  <option value="{{ produit.id }}">{{ produit.nom }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 text-end mt-2">
+              <button type="submit" class="btn btn-success animate__animated animate__pulse animate__delay-2s"><i class="bi bi-file-earmark-excel"></i> Télécharger le rapport Excel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Courbe CA TTC
+    const caChart = document.getElementById('caChart');
+    if (caChart) {
+      new Chart(caChart, {
+        type: 'line',
+        data: {
+          labels: {{ mois_labels|tojson }},
+          datasets: [{
+            label: "CA TTC",
+            data: {{ ca_mois|tojson }},
+            borderColor: '#1a2238',
+            backgroundColor: 'rgba(33,230,193,0.2)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 4,
+            pointBackgroundColor: '#21e6c1',
+            pointBorderColor: '#1a2238',
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+    // Pie chart top clients
+    const pieClients = document.getElementById('pieClients');
+    if (pieClients) {
+      new Chart(pieClients, {
+        type: 'pie',
+        data: {
+          labels: {{ top_clients_labels|tojson }},
+          datasets: [{
+            data: {{ top_clients_values|tojson }},
+            backgroundColor: ['#21e6c1','#278ea5','#1a2238','#e3eafc','#f6f8fa'],
+            borderWidth: 1
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+    // Histogramme factures par mois
+    const facturesBar = document.getElementById('facturesBar');
+    if (facturesBar) {
+      new Chart(facturesBar, {
+        type: 'bar',
+        data: {
+          labels: {{ mois_labels|tojson }},
+          datasets: [{
+            label: "Factures",
+            data: {{ factures_par_mois|tojson }},
+            backgroundColor: '#1a2238',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+  </script>
+</div>
+{% endblock %} 

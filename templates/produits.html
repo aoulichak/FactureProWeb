@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Produits</h2>
+    <a href="{{ url_for('produits.add_produit') }}" class="btn btn-primary">Ajouter un produit</a>
+  </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <div class="card shadow animate__animated animate__fadeIn">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Nom</th>
+              <th>Description</th>
+              <th>Prix</th>
+              <th>Type</th>
+              <th>TVA (%)</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for produit in produits %}
+            <tr>
+              <td>{{ produit.nom }}</td>
+              <td>{{ produit.description[:50] }}{% if produit.description and produit.description|length > 50 %}...{% endif %}</td>
+              <td>{{ '{:,.2f}'.format(produit.prix) }} DH</td>
+              <td>{{ produit.type_prix }}</td>
+              <td>{{ produit.tva }}</td>
+              <td>
+                <a href="{{ url_for('produits.edit_produit', produit_id=produit.id) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                <form action="{{ url_for('produits.delete_produit', produit_id=produit.id) }}" method="post" style="display:inline;" onsubmit="return confirm('Supprimer ce produit ?');">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 
