@@ -1,0 +1,58 @@
+body {
+  background: linear-gradient(120deg, #1a2238 0%, #f6f8fa 100%);
+  min-height: 100vh;
+}
+.card {
+  border-radius: 1rem;
+  transition: box-shadow 0.3s;
+}
+.card:hover {
+  box-shadow: 0 8px 32px rgba(33,230,193,0.15);
+}
+.btn-primary {
+  transition: background 0.3s, color 0.3s;
+}
+.search-container {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    padding: 12px 18px;
+    margin: 16px 0 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 100%;
+    min-width: 220px;
+    width: 100%;
+}
+
+.search-container input,
+.search-container button {
+    border-radius: 8px !important;
+    margin: 0 3px;
+    height: 36px;
+    font-size: 1rem;
+}
+
+.search-container .form-control {
+    font-size: 1rem;
+    padding-left: 10px;
+}
+
+.search-container .btn {
+    padding: 0 14px;
+    font-size: 0.98rem;
+}
+
+.search-container .input-group-text {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-right: none;
+    border-radius: 8px 0 0 8px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    height: 36px;
+    font-size: 1.1rem;
+} 
